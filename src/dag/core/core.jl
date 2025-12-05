@@ -4,7 +4,7 @@
 """
     struct DAG <: MoveEvaluator
 
-Core data structure representing an optimization problem as a Directed Acyclic Graph (DAG). 
+Core data structure representing an optimization problem as a Directed Acyclic Graph (DAG).
 An invariant represents an intermediate relationship between variables.
 We represent these relationships as a Directed Acyclic Graph (DAG). This representation
 allows for cheap evaluations of local moves.
@@ -42,7 +42,7 @@ const EARLY_STOP_CONSTRAINT_THRESHOLD = 0.1
 struct NoHelper <: AbstractDAGHelper end
 
 """
-    DAG(n_variables::Int; 
+    DAG(n_variables::Int;
         helper::AbstractDAGHelper = NoHelper(),
         early_stop_threshold::Float64 = EARLY_STOP_CONSTRAINT_THRESHOLD)
 
@@ -83,8 +83,8 @@ helper(dag::DAG) = dag._helper
 struct _ResultInvariant <: Invariant end
 struct _DecisionVariableInvariant <: Invariant end
 InputType(::_ResultInvariant) = SingleType()
-eval(::_DecisionVariableInvariant, message::DAGMessage) = message
-eval(::_ResultInvariant, ::DAGMessage) = NoMessage()
+evaluate(::_DecisionVariableInvariant, message::DAGMessage) = message
+evaluate(::_ResultInvariant, ::DAGMessage) = NoMessage()
 commit!(::_DecisionVariableInvariant, ::DAGMessage) = nothing
 commit!(::_ResultInvariant, ::DAGMessage) = nothing
 
@@ -94,7 +94,7 @@ commit!(::_ResultInvariant, ::DAGMessage) = nothing
 Tell whether a DAG has been `init!` already.
 When a DAG has been init, it's not possible to add invariants anymore.
 
-Note that it could be possible to bypass this by calling methods on dag._adjacency_matrix. 
+Note that it could be possible to bypass this by calling methods on dag._adjacency_matrix.
 This would lead to unexpected and unfixable behaviours.
 """
 isinit(dag::DAG) = dag._is_init
@@ -175,14 +175,14 @@ It's possible to optionally pass a name to this new invariant.
 Note that you need to call the `init!` method before using the DAG whenever you add an invariant.
 
 # Arguments
-- `dag::DAG`: The DAG. 
-- `invariant::Invariant`: The invariant to add. 
+- `dag::DAG`: The DAG.
+- `invariant::Invariant`: The invariant to add.
 
 
 # Optional arguments
 - `invariant_parent_indexes::Vector{Int}`: The invariant parent indexes of the new invariant: the other invariants this invariant will need inputs from.
 - `variable_parent_indexes::Vector{Int}`: The variable parent indexes of the new invariant: the variables that the invariant directly depend on. This means the invariant will receive some `SingleVariableMoveDelta` directly for any variables that was changed (when in DeltaRun).
-- `name::Union{String,Nothing} = nothing`: The name of the invariant. 
+- `name::Union{String,Nothing} = nothing`: The name of the invariant.
 - `using_cp`: Whether to use constraint programming
 
 Important: Each invariant requires at least one parent connection:
@@ -232,12 +232,12 @@ add_edge!(dag::DAG, parent_index::Int, child_index::Int) = add_edge!(dag._adjace
 """
     sort_dag!(dag::DAG)
 
-Sort the DAG. 
+Sort the DAG.
 It proceeds in two steps. First it computes a topoligical ordering of the dag using Kahn's algorithm.
 Then, it rearranges the invariant, name and using_cp vector and adjacency matrix accordingly.
 
 # Arguments
-- `dag::DAG`: The DAG. 
+- `dag::DAG`: The DAG.
 """
 function sort_dag!(dag::DAG)
     ordered_invariant_ids, ranks = _rank_invariants!(dag)
@@ -612,7 +612,7 @@ end
 
     dag = JuLS.DAG(1) # picture of the test DAG below 😀
 
-    #  invariant1      var1 
+    #  invariant1      var1
     #       \          /
     #        \        /
     #         \      /

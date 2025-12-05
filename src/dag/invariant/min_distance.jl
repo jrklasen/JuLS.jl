@@ -15,7 +15,7 @@ end
 
 MinDistanceInvariant{T,U}(min_distance::U) where {T,U} = MinDistanceInvariant(T[], min_distance, false)
 
-function eval(
+function evaluate(
     invariant::MinDistanceInvariant{T,U},
     deltas::DAGMessagesVector{SingleVariableMoveDelta{V}},
 ) where {T,U,V<:DecisionValue}
@@ -37,7 +37,7 @@ function commit!(
     invariant.is_currently_broken = _is_broken(invariant.min_distance, invariant.values)
 end
 
-function eval(
+function evaluate(
     invariant::MinDistanceInvariant{T,U},
     messages::DAGMessagesVector{SingleVariableMessage{V}},
 ) where {T,U,V<:DecisionValue}
@@ -58,7 +58,7 @@ function init!(
 
     invariant.is_currently_broken = false
 
-    return eval(invariant, messages)
+    return evaluate(invariant, messages)
 end
 
 function _apply_deltas!(
@@ -90,7 +90,7 @@ _is_broken(min_distance::U, sorted_values::Vector{T}) where {T,U} =
     length(sorted_values) >= 2 && minimum(diff(sorted_values)) < min_distance
 _min_distance(sorted_values::Vector{T}) where {T} = minimum(diff(sorted_values))
 
-@testitem "eval min distance invariant delta with ints" begin
+@testitem "evaluate min distance invariant delta with ints" begin
     invariant = JuLS.MinDistanceInvariant{Int,Int}(10)
 
     base_int = 0
@@ -117,13 +117,13 @@ _min_distance(sorted_values::Vector{T}) where {T} = minimum(diff(sorted_values))
         JuLS.IntDecisionValue(base_int + 45),
     )
 
-    @test JuLS.eval(invariant, JuLS.DAGMessagesVector([delta1])) == JuLS.ConstraintDelta(0.0)
-    @test JuLS.eval(invariant, JuLS.DAGMessagesVector([delta2])) == JuLS.ConstraintDelta(1000.0)
-    @test JuLS.eval(invariant, JuLS.DAGMessagesVector([delta3])) == JuLS.ConstraintDelta(0.0)
+    @test JuLS.evaluate(invariant, JuLS.DAGMessagesVector([delta1])) == JuLS.ConstraintDelta(0.0)
+    @test JuLS.evaluate(invariant, JuLS.DAGMessagesVector([delta2])) == JuLS.ConstraintDelta(1000.0)
+    @test JuLS.evaluate(invariant, JuLS.DAGMessagesVector([delta3])) == JuLS.ConstraintDelta(0.0)
 
-    @test JuLS.eval(invariant, JuLS.DAGMessagesVector([delta1, delta3])) == JuLS.ConstraintDelta(1000.0)
+    @test JuLS.evaluate(invariant, JuLS.DAGMessagesVector([delta1, delta3])) == JuLS.ConstraintDelta(1000.0)
 
-    @test JuLS.eval(
+    @test JuLS.evaluate(
         invariant,
         JuLS.DAGMessagesVector{JuLS.SingleVariableMoveDelta{JuLS.IntDecisionValue}}(
             JuLS.SingleVariableMoveDelta{JuLS.IntDecisionValue}[],
@@ -131,7 +131,7 @@ _min_distance(sorted_values::Vector{T}) where {T} = minimum(diff(sorted_values))
     ) == JuLS.ConstraintDelta(0.0)
 end
 
-@testitem "eval min distance invariant delta repairing constraint" begin
+@testitem "evaluate min distance invariant delta repairing constraint" begin
     invariant = JuLS.MinDistanceInvariant{Int,Int}(10)
 
     base_int = 0
@@ -158,7 +158,7 @@ end
 
     JuLS.commit!(invariant, JuLS.DAGMessagesVector([delta1]))
 
-    @test JuLS.eval(invariant, JuLS.DAGMessagesVector([delta2])) == JuLS.ConstraintDelta(-1000.0)
+    @test JuLS.evaluate(invariant, JuLS.DAGMessagesVector([delta2])) == JuLS.ConstraintDelta(-1000.0)
 end
 
 @testitem "commit! min distance invariant delta with ints" begin
@@ -232,7 +232,7 @@ end
     @test invariant5.min_distance == 10
 end
 
-@testitem "eval min distance invariant full message with ints" begin
+@testitem "evaluate min distance invariant full message with ints" begin
     invariant = JuLS.MinDistanceInvariant{Int,Int}(10)
 
     base_int = 0
@@ -241,10 +241,10 @@ end
     message2 = JuLS.SingleVariableMessage{JuLS.IntDecisionValue}(2, JuLS.IntDecisionValue(base_int + 10))
     message3 = JuLS.SingleVariableMessage{JuLS.IntDecisionValue}(3, JuLS.IntDecisionValue(base_int + 15))
 
-    @test JuLS.eval(invariant, JuLS.DAGMessagesVector([message2, message1])) == JuLS.ConstraintFullMessage(0.0)
-    @test JuLS.eval(invariant, JuLS.DAGMessagesVector([message2, message1, message3])) ==
+    @test JuLS.evaluate(invariant, JuLS.DAGMessagesVector([message2, message1])) == JuLS.ConstraintFullMessage(0.0)
+    @test JuLS.evaluate(invariant, JuLS.DAGMessagesVector([message2, message1, message3])) ==
           JuLS.ConstraintFullMessage(1000.0)
-    @test JuLS.eval(
+    @test JuLS.evaluate(
         invariant,
         JuLS.DAGMessagesVector{JuLS.SingleVariableMessage{JuLS.IntDecisionValue}}(
             JuLS.SingleVariableMessage{JuLS.IntDecisionValue}[],

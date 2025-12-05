@@ -152,8 +152,8 @@ end
 generate_input(::Type{Move}, ::AbstractModel, move::Move) = move
 
 """
-    optimize!(model::AbstractModel; 
-             rng = Random.GLOBAL_RNG, 
+    optimize!(model::AbstractModel;
+             rng = Random.GLOBAL_RNG,
              n_iterations::Int = 100)
 
 Main optimization function that iteratively improves the solution.
@@ -188,8 +188,8 @@ function optimize!(model::AbstractModel, T::Type{<:MoveEvaluatorInput}, time_lim
 end
 
 """
-    optimize_one_iteration!(model::AbstractModel, 
-                          T::Type{<:MoveEvaluatorInput}; 
+    optimize_one_iteration!(model::AbstractModel,
+                          T::Type{<:MoveEvaluatorInput};
                           rng = Random.GLOBAL_RNG)
 
 Performs one iteration of the optimization process.
@@ -218,7 +218,7 @@ end
                   moves::AbstractArray{<:MoveEvaluatorInput,1},
                   rng = Random.GLOBAL_RNG)
 
-Performs a move filtering and a batched parallel evaluation on the set of moves. 
+Performs a move filtering and a batched parallel evaluation on the set of moves.
 
 # Arguments
 - `model`: Model being optimized
@@ -242,7 +242,7 @@ function evaluate_moves(
     number_of_batches = n_evaluation ÷ MOVE_BATCH_SIZE + 1
     for i = 1:number_of_batches
         Threads.@threads for i = (1+(i-1)*MOVE_BATCH_SIZE):min(i * MOVE_BATCH_SIZE, n_evaluation)
-            evaluated_moves[i] = MoveEvaluatorOutput(eval(dag(model), generate_input(T, model, filtered_moves[i])))
+            evaluated_moves[i] = MoveEvaluatorOutput(evaluate(dag(model), generate_input(T, model, filtered_moves[i])))
         end
     end
 
