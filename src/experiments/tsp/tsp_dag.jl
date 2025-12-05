@@ -81,7 +81,7 @@ function create_tsp_dag(distance_matrix::Matrix{<:Number}, α::Float64 = DEFAULT
     return dag
 end
 
-@testitem "Test tsp eval 1" begin
+@testitem "Test tsp evaluate 1" begin
     distance_matrix = [
         0.0 2.0 9.0 10.0
         2.0 0.0 6.0 4.0
@@ -95,14 +95,14 @@ end
 
     move = JuLS.Move(decision_variables[[1, 2]], [JuLS.IntDecisionValue(2), JuLS.IntDecisionValue(1)])
 
-    evaluated_move = JuLS.eval(dag, move)
+    evaluated_move = JuLS.evaluate(dag, move)
 
     @test JuLS.delta_obj(evaluated_move) == -3
     @test JuLS.isfeasible(evaluated_move)
 end
 
 
-@testitem "Test tsp eval 2" begin
+@testitem "Test tsp evaluate 2" begin
     distance_matrix = [
         0.0 2.0 9.0 10.0
         2.0 0.0 6.0 4.0
@@ -116,7 +116,7 @@ end
 
     move = JuLS.Move(decision_variables[[1, 2]], [JuLS.IntDecisionValue(3), JuLS.IntDecisionValue(1)])
 
-    evaluated_move = JuLS.eval(dag, move)
+    evaluated_move = JuLS.evaluate(dag, move)
 
     @test JuLS.delta_obj(evaluated_move) == Inf
     @test !JuLS.isfeasible(evaluated_move)
@@ -137,10 +137,10 @@ end
 
     move = JuLS.Move(decision_variables[[1, 2]], [JuLS.IntDecisionValue(2), JuLS.IntDecisionValue(1)])
 
-    JuLS.commit!(dag, JuLS.eval(dag, move))
+    JuLS.commit!(dag, JuLS.evaluate(dag, move))
 
     evaluated_move =
-        JuLS.eval(dag, JuLS.Move(decision_variables[[1, 2]], [JuLS.IntDecisionValue(1), JuLS.IntDecisionValue(2)]))
+        JuLS.evaluate(dag, JuLS.Move(decision_variables[[1, 2]], [JuLS.IntDecisionValue(1), JuLS.IntDecisionValue(2)]))
 
     @test JuLS.delta_obj(evaluated_move) == 3
     @test JuLS.isfeasible(evaluated_move)
@@ -160,15 +160,15 @@ end
 
     move = JuLS.Move(decision_variables[[1, 2]], [JuLS.IntDecisionValue(3), JuLS.IntDecisionValue(1)])
 
-    @test_throws ErrorException JuLS.commit!(dag, JuLS.eval(dag, move)) # Infeasible move that caused an early stop
+    @test_throws ErrorException JuLS.commit!(dag, JuLS.evaluate(dag, move)) # Infeasible move that caused an early stop
 
-    evaluated_move = JuLS.eval(dag, move) # So the move is still infeasible
+    evaluated_move = JuLS.evaluate(dag, move) # So the move is still infeasible
 
     @test JuLS.delta_obj(evaluated_move) == Inf
     @test !JuLS.isfeasible(evaluated_move)
 end
 
-@testitem "TSP full eval" begin
+@testitem "TSP full evaluate" begin
     distance_matrix = [
         0.0 2.0 9.0 10.0
         2.0 0.0 6.0 4.0
@@ -180,7 +180,7 @@ end
     decision_variables = [JuLS.DecisionVariable(i, JuLS.IntDecisionValue(i)) for i = 1:4]
     JuLS.init!(dag, JuLS.DecisionVariablesArray(decision_variables))
 
-    solution1 = JuLS.Solution(JuLS.eval(dag, JuLS.DecisionVariablesArray(decision_variables)))
+    solution1 = JuLS.Solution(JuLS.evaluate(dag, JuLS.DecisionVariablesArray(decision_variables)))
 
     @test solution1.values == [JuLS.IntDecisionValue(i) for i = 1:4]
     @test solution1.objective == 21
@@ -188,7 +188,7 @@ end
 
     position = [3, 1, 4, 2]
     decision_variables = [JuLS.DecisionVariable(i, JuLS.IntDecisionValue(position[i])) for i = 1:4]
-    solution2 = JuLS.Solution(JuLS.eval(dag, JuLS.DecisionVariablesArray(decision_variables)))
+    solution2 = JuLS.Solution(JuLS.evaluate(dag, JuLS.DecisionVariablesArray(decision_variables)))
 
 
     @test solution2.values ==
@@ -211,12 +211,12 @@ end
     decision_variables = [JuLS.DecisionVariable(i, JuLS.IntDecisionValue(position[i])) for i = 1:4]
     JuLS.init!(dag, JuLS.DecisionVariablesArray(decision_variables))
 
-    solution1 = JuLS.Solution(JuLS.eval(dag, JuLS.DecisionVariablesArray(decision_variables)))
+    solution1 = JuLS.Solution(JuLS.evaluate(dag, JuLS.DecisionVariablesArray(decision_variables)))
 
     dag2 = JuLS.create_tsp_dag(distance_matrix, 0.0)
     JuLS.init!(dag2, JuLS.DecisionVariablesArray(decision_variables))
 
-    solution2 = JuLS.Solution(JuLS.eval(dag2, JuLS.DecisionVariablesArray(decision_variables)))
+    solution2 = JuLS.Solution(JuLS.evaluate(dag2, JuLS.DecisionVariablesArray(decision_variables)))
 
     @test solution1.objective == 22 # 12 + alpha (1 violation)
     @test solution2.objective == 12

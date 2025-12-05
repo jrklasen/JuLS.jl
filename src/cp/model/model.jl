@@ -11,8 +11,8 @@ include("variables.jl")
 - constraints::Vector{CPConstraint}                             : Vector of constraints' problem
 - trailer::Trailer                                              : Trailer linked to model's AbstractVariables
 
-Interface between the Constraint Programming (CP) and Local Search (LS) model. Enables to efficiently apply the LocalSearch state to the CP variables. 
-ATTENTION: the model must be initialized once all variables and constraints are set. 
+Interface between the Constraint Programming (CP) and Local Search (LS) model. Enables to efficiently apply the LocalSearch state to the CP variables.
+ATTENTION: the model must be initialized once all variables and constraints are set.
 """
 struct CPLSModel
     decision_variables::Vector{DecisionVariableContext}
@@ -24,7 +24,7 @@ struct CPLSModel
 end
 
 include("apply.jl")
-include("eval.jl")
+include("evaluate.jl")
 
 CPLSModel() = CPLSModel(Trailer())
 

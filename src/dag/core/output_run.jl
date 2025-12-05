@@ -43,7 +43,7 @@ end
 
 output_path(r::OutputRun) = r.input.path
 
-function eval(r::OutputRun, dag::DAG, index::Int)
+function evaluate(r::OutputRun, dag::DAG, index::Int)
     input_message = input_messages(r, index)
     current_invariant = invariant(dag, index)
 
@@ -71,7 +71,7 @@ _isbrokenconstraint(::HardConstraint, result::DAGMessage) = result.value > 0
         name::Union{String,Nothing} = nothing
     )
 
-Processes and writes invariant evaluation results during OutputRun execution 
+Processes and writes invariant evaluation results during OutputRun execution
 
 # Process Flow
 1. Evaluates invariant with best solution message and original solution message
@@ -85,8 +85,8 @@ function output(
     ::AbstractDAGHelper;
     name::Union{String,Nothing} = nothing,
 )
-    best_value = eval(invariant, message.best_message)
-    original_value = eval(invariant, message.original_message)
+    best_value = evaluate(invariant, message.best_message)
+    original_value = evaluate(invariant, message.original_message)
 
     write_invariant_file(output_string(best_value), output_string(original_value), name, output_path)
 
@@ -136,7 +136,7 @@ end
         nb_of_eval::Int
     end
 
-    function JuLS.eval(i::MockInvariant, ::JuLS.DecisionVariablesArray)
+    function JuLS.evaluate(i::MockInvariant, ::JuLS.DecisionVariablesArray)
         i.nb_of_eval += 1
         return JuLS.FloatFullMessage(i.nb_of_eval)
     end
@@ -152,7 +152,7 @@ end
     ) == JuLS.OutputMessage(JuLS.FloatFullMessage(1.0), JuLS.FloatFullMessage(2.0))
 end
 
-@testitem "Testing eval with output unchanged" begin
+@testitem "Testing evaluate with output unchanged" begin
     using CSV
     using DataFrames
     mutable struct MockInvariant <: JuLS.Invariant
@@ -161,7 +161,7 @@ end
 
     JuLS.InputType(::MockInvariant) = JuLS.SingleType()
 
-    function JuLS.eval(i::MockInvariant, ::JuLS.SingleVariableMessage)
+    function JuLS.evaluate(i::MockInvariant, ::JuLS.SingleVariableMessage)
         return JuLS.FloatFullMessage(i.nb_of_eval)
     end
 
@@ -181,7 +181,7 @@ end
         test_path,
     )
 
-    JuLS.eval(dag, input)
+    JuLS.evaluate(dag, input)
 
     invariants_df = CSV.read(JuLS.invariant_filename(test_path), DataFrame)
     modified_invariants_df = CSV.read(JuLS.modified_invariant_filename(test_path), DataFrame)
@@ -201,7 +201,7 @@ end
     @test modified_invariants_df.new_value == []
 end
 
-@testitem "Testing eval with output changed" begin
+@testitem "Testing evaluate with output changed" begin
     using CSV
     using DataFrames
     mutable struct MockInvariant <: JuLS.Invariant
@@ -209,7 +209,7 @@ end
     end
     JuLS.InputType(::MockInvariant) = JuLS.SingleType()
 
-    function JuLS.eval(i::MockInvariant, ::JuLS.SingleVariableMessage)
+    function JuLS.evaluate(i::MockInvariant, ::JuLS.SingleVariableMessage)
         i.nb_of_eval += 1
         return JuLS.FloatFullMessage(i.nb_of_eval)
     end
@@ -230,7 +230,7 @@ end
         test_path,
     )
 
-    JuLS.eval(dag, input)
+    JuLS.evaluate(dag, input)
 
     invariants_df = CSV.read(JuLS.invariant_filename(test_path), DataFrame)
     modified_invariants_df = CSV.read(JuLS.modified_invariant_filename(test_path), DataFrame)
@@ -256,7 +256,7 @@ end
         test_path,
     )
 
-    JuLS.eval(dag, input)
+    JuLS.evaluate(dag, input)
 
     invariants_df = CSV.read(JuLS.invariant_filename(test_path), DataFrame)
     modified_invariants_df = CSV.read(JuLS.modified_invariant_filename(test_path), DataFrame)
@@ -276,7 +276,7 @@ end
     @test modified_invariants_df.new_value == [3.0]
 end
 
-@testitem "Testing eval without a name" begin
+@testitem "Testing evaluate without a name" begin
     using CSV
     using DataFrames
     mutable struct MockInvariant <: JuLS.Invariant
@@ -284,7 +284,7 @@ end
     end
     JuLS.InputType(::MockInvariant) = JuLS.SingleType()
 
-    function JuLS.eval(i::MockInvariant, ::JuLS.SingleVariableMessage)
+    function JuLS.evaluate(i::MockInvariant, ::JuLS.SingleVariableMessage)
         return JuLS.FloatFullMessage(i.nb_of_eval)
     end
 
@@ -304,7 +304,7 @@ end
         test_path,
     )
 
-    JuLS.eval(dag, input)
+    JuLS.evaluate(dag, input)
 
     invariants_df = CSV.read(JuLS.invariant_filename(test_path), DataFrame)
     modified_invariants_df = CSV.read(JuLS.modified_invariant_filename(test_path), DataFrame)
@@ -324,7 +324,7 @@ end
     @test modified_invariants_df.new_value == []
 end
 
-@testitem "Testing eval without a name but dif values" begin
+@testitem "Testing evaluate without a name but dif values" begin
     using CSV
     using DataFrames
     mutable struct MockInvariant <: JuLS.Invariant
@@ -332,7 +332,7 @@ end
     end
     JuLS.InputType(::MockInvariant) = JuLS.SingleType()
 
-    function JuLS.eval(i::MockInvariant, ::JuLS.SingleVariableMessage)
+    function JuLS.evaluate(i::MockInvariant, ::JuLS.SingleVariableMessage)
         i.nb_of_eval += 1
         return JuLS.FloatFullMessage(i.nb_of_eval)
     end
@@ -353,7 +353,7 @@ end
         test_path,
     )
 
-    JuLS.eval(dag, input)
+    JuLS.evaluate(dag, input)
 
     invariants_df = CSV.read(JuLS.invariant_filename(test_path), DataFrame)
     modified_invariants_df = CSV.read(JuLS.modified_invariant_filename(test_path), DataFrame)
@@ -373,7 +373,7 @@ end
     @test modified_invariants_df.new_value == []
 end
 
-@testitem "Testing eval with a name but no string output" begin
+@testitem "Testing evaluate with a name but no string output" begin
     using CSV
     using DataFrames
     mutable struct MockInvariant <: JuLS.Invariant
@@ -381,7 +381,7 @@ end
     end
     JuLS.InputType(::MockInvariant) = JuLS.SingleType()
 
-    function JuLS.eval(i::MockInvariant, ::JuLS.SingleVariableMessage)
+    function JuLS.evaluate(i::MockInvariant, ::JuLS.SingleVariableMessage)
         i.nb_of_eval += 1
         return JuLS.FloatDelta(i.nb_of_eval)
     end
@@ -402,7 +402,7 @@ end
         test_path,
     )
 
-    JuLS.eval(dag, input)
+    JuLS.evaluate(dag, input)
 
     invariants_df = CSV.read(JuLS.invariant_filename(test_path), DataFrame)
     modified_invariants_df = CSV.read(JuLS.modified_invariant_filename(test_path), DataFrame)

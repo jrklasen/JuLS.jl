@@ -8,7 +8,7 @@ A composite invariant that combines a simple chain of invariants into a single u
 
 # Fields
 - `invariants::Vector{Invariant}`: A vector of individual invariants.
-- `names::Vector{Union{Nothing,String}}`: A vector of names corresponding to each invariant. 
+- `names::Vector{Union{Nothing,String}}`: A vector of names corresponding to each invariant.
    Can be `nothing` if no name is provided.
 
 # Constructors
@@ -19,10 +19,10 @@ Creates a new `CompositeInvariant`. If names are not provided, they default to `
 
 # Throws
 - `AssertionError`: If `invariants` is empty or if the length of `invariants` and `names` don't match.
-   
+
 # Notes
 The CompositeInvariant allows grouping multiple invariants together, which can be useful for creating more complex invariant structures or for organizational purposes.
-When evaluating, committing, initializing, or outputting, the composite invariant applies the operation to each of its contained invariants in sequence. 
+When evaluating, committing, initializing, or outputting, the composite invariant applies the operation to each of its contained invariants in sequence.
 """
 struct CompositeInvariant <: Invariant
     invariants::Vector{Invariant}
@@ -38,14 +38,14 @@ end
 CompositeInvariant(invariants::Vector{<:Invariant}) =
     CompositeInvariant(invariants, [nothing for _ = 1:length(invariants)])
 
-function eval(composite_invariant::CompositeInvariant, message::DAGMessage)
+function evaluate(composite_invariant::CompositeInvariant, message::DAGMessage)
     result = message
 
     for invariant in composite_invariant.invariants
         if iszero(result)
             return NoMessage()
         end
-        result = eval(invariant, _init_message(InputType(invariant), result))
+        result = evaluate(invariant, _init_message(InputType(invariant), result))
     end
 
     return result
@@ -58,7 +58,7 @@ function commit!(composite_invariant::CompositeInvariant, message::DAGMessage)
         if iszero(result)
             return NoMessage()
         end
-        new_result = eval(invariant, _init_message(InputType(invariant), result))
+        new_result = evaluate(invariant, _init_message(InputType(invariant), result))
         commit!(invariant, _init_message(InputType(invariant), result))
         result = new_result
     end
@@ -118,44 +118,44 @@ end
     @test all(isnothing.(invariant.names))
 end
 
-@testitem "testing composite invariant eval" begin
+@testitem "testing composite invariant evaluate" begin
     struct MockInvariant <: JuLS.Invariant end
     JuLS.InputType(::MockInvariant) = JuLS.SingleType()
 
-    JuLS.eval(::MockInvariant, m::JuLS.FloatDelta) = m + JuLS.FloatDelta(1)
+    JuLS.evaluate(::MockInvariant, m::JuLS.FloatDelta) = m + JuLS.FloatDelta(1)
 
     invariant = JuLS.CompositeInvariant([MockInvariant(), MockInvariant()])
 
-    @test JuLS.eval(invariant, JuLS.FloatDelta(1)) == JuLS.FloatDelta(3)
+    @test JuLS.evaluate(invariant, JuLS.FloatDelta(1)) == JuLS.FloatDelta(3)
 end
 
-@testitem "testing composite invariant eval with default input type" begin
+@testitem "testing composite invariant evaluate with default input type" begin
     struct MockInvariant <: JuLS.Invariant end
 
-    JuLS.eval(::MockInvariant, m::JuLS.FloatDelta) = m + JuLS.FloatDelta(1)
+    JuLS.evaluate(::MockInvariant, m::JuLS.FloatDelta) = m + JuLS.FloatDelta(1)
 
     invariant = JuLS.CompositeInvariant([MockInvariant(), MockInvariant()])
 
-    @test_throws MethodError JuLS.eval(invariant, JuLS.FloatDelta(1)) == JuLS.FloatDelta(3)
+    @test_throws MethodError JuLS.evaluate(invariant, JuLS.FloatDelta(1)) == JuLS.FloatDelta(3)
 end
 
-@testitem "testing composite invariant eval with zero message" begin
+@testitem "testing composite invariant evaluate with zero message" begin
     mutable struct MockInvariant <: JuLS.Invariant
         counter::Int
     end
     JuLS.InputType(::MockInvariant) = JuLS.SingleType()
 
-    JuLS.eval(inv::MockInvariant, ::JuLS.FloatDelta) = (inv.counter += 1; JuLS.FloatDelta(0))
+    JuLS.evaluate(inv::MockInvariant, ::JuLS.FloatDelta) = (inv.counter += 1; JuLS.FloatDelta(0))
 
     invariant = JuLS.CompositeInvariant([MockInvariant(0), MockInvariant(0)])
 
-    @test JuLS.eval(invariant, JuLS.FloatDelta(1)) == JuLS.NoMessage()
+    @test JuLS.evaluate(invariant, JuLS.FloatDelta(1)) == JuLS.NoMessage()
     @test invariant.invariants[1].counter == 1
     @test invariant.invariants[2].counter == 0
 
     invariant = JuLS.CompositeInvariant([MockInvariant(0), MockInvariant(0)])
 
-    @test JuLS.eval(invariant, JuLS.FloatDelta(0)) == JuLS.NoMessage()
+    @test JuLS.evaluate(invariant, JuLS.FloatDelta(0)) == JuLS.NoMessage()
     @test invariant.invariants[1].counter == 0
     @test invariant.invariants[2].counter == 0
 end
@@ -166,7 +166,7 @@ end
     end
     JuLS.InputType(::MockInvariant) = JuLS.SingleType()
 
-    JuLS.eval(::MockInvariant, m::JuLS.FloatDelta) = (m + JuLS.FloatDelta(1))
+    JuLS.evaluate(::MockInvariant, m::JuLS.FloatDelta) = (m + JuLS.FloatDelta(1))
     JuLS.commit!(inv::MockInvariant, m::JuLS.FloatDelta) = (inv.a += m; nothing)
 
     invariant = JuLS.CompositeInvariant([MockInvariant(JuLS.FloatDelta(0)), MockInvariant(JuLS.FloatDelta(0))])
@@ -183,7 +183,7 @@ end
     end
     JuLS.InputType(::MockInvariant) = JuLS.SingleType()
 
-    JuLS.eval(inv::MockInvariant, m::JuLS.FloatDelta) = (m - inv.a)
+    JuLS.evaluate(inv::MockInvariant, m::JuLS.FloatDelta) = (m - inv.a)
     JuLS.commit!(inv::MockInvariant, m::JuLS.FloatDelta) = (inv.a = m; nothing)
 
     invariant = JuLS.CompositeInvariant([MockInvariant(JuLS.FloatDelta(0)), MockInvariant(JuLS.FloatDelta(1))])
@@ -200,8 +200,8 @@ end
     end
     JuLS.InputType(::MockInvariant) = JuLS.SingleType()
 
-    JuLS.eval(::MockInvariant, m::JuLS.FloatFullMessage) = (m + JuLS.FloatFullMessage(1))
-    JuLS.init!(inv::MockInvariant, m::JuLS.FloatFullMessage) = (inv.a = m; JuLS.eval(inv, m))
+    JuLS.evaluate(::MockInvariant, m::JuLS.FloatFullMessage) = (m + JuLS.FloatFullMessage(1))
+    JuLS.init!(inv::MockInvariant, m::JuLS.FloatFullMessage) = (inv.a = m; JuLS.evaluate(inv, m))
 
     invariant =
         JuLS.CompositeInvariant([MockInvariant(JuLS.FloatFullMessage(0)), MockInvariant(JuLS.FloatFullMessage(0))])
@@ -216,7 +216,7 @@ end
     struct MockInvariant <: JuLS.Invariant end
     JuLS.InputType(::MockInvariant) = JuLS.SingleType()
 
-    JuLS.eval(::MockInvariant, m::JuLS.FloatFullMessage) = (m + JuLS.FloatFullMessage(1))
+    JuLS.evaluate(::MockInvariant, m::JuLS.FloatFullMessage) = (m + JuLS.FloatFullMessage(1))
 
     invariant = JuLS.CompositeInvariant([MockInvariant(), MockInvariant()])
 

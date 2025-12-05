@@ -22,7 +22,7 @@ function filter_moves(model::Model, filter::CPEnumeration, moves::LazyCartesianM
     relaxed_variables = Int[var.index for var in moves.selected_variables]
     current_solution = Int[v.value for v in model.current_solution.values]
 
-    filtering_time = @elapsed filtered_moves = eval(filter.cp_model, current_solution, relaxed_variables)
+    filtering_time = @elapsed filtered_moves = evaluate(filter.cp_model, current_solution, relaxed_variables)
 
     if filter.display
         display_filtering_performance(length(moves) - 1, length(filtered_moves), filtering_time)
@@ -35,8 +35,8 @@ function filter_moves(model::Model, filter::CPEnumeration, moves::LazyCartesianM
 end
 
 """
-    display_filtering_performance(n_potential_solutions::Int, 
-                                n_filtered_solutions::Int, 
+    display_filtering_performance(n_potential_solutions::Int,
+                                n_filtered_solutions::Int,
                                 filtering_time::Float64)
 
 Displays performance metrics for the move CP filtering process.
@@ -93,7 +93,7 @@ end
     moves = JuLS.LazyCartesianMoves(model.decision_variables[[1, 2]])
 
     @test model.decision_variables[3].current_value.value == 2 # The current color is 2 for node 3
-    @test model.decision_variables[4].current_value.value == 2 # The current color is 2 for node 4 
+    @test model.decision_variables[4].current_value.value == 2 # The current color is 2 for node 4
 
     rng = MersenneTwister(0)
 
@@ -122,4 +122,3 @@ end
     end
     @test filtered_moves[10] == JuLS.NO_MOVE
 end
-

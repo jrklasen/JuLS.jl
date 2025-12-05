@@ -46,7 +46,7 @@ end
     )
 
 Initializes the neighbourhood on first call by ordering moves based on their potential improvement.
-At each iteration gets the next set of moves to explore based on greedy ordering. 
+At each iteration gets the next set of moves to explore based on greedy ordering.
 Returns moves in order of their potential improvement
 
 # Returns
@@ -152,7 +152,7 @@ end
     moves = JuLS.init_neighbourhood(JuLS.neighbourhood_heuristic(model), model)
     @test JuLS.neighbourhood_heuristic(model)._is_init == true
     @test typeof(moves) == Vector{JuLS.LazyCartesianMoves}
-    @test JuLS.delta_obj(JuLS.eval(model.dag, moves[1][1])) <= JuLS.delta_obj(JuLS.eval(model.dag, moves[2][1]))
+    @test JuLS.delta_obj(JuLS.evaluate(model.dag, moves[1][1])) <= JuLS.delta_obj(JuLS.evaluate(model.dag, moves[2][1]))
 end
 
 @testitem "eval_variable()" begin

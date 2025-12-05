@@ -72,7 +72,7 @@ impacted_variables(oi::OutputInput) = impacted_variables(oi.original_variables)
         output_type::Type{<:OutputType} = BestSolutionOutput,
     )
 
-Creates and populates an output folder with solution information in .csv files. 
+Creates and populates an output folder with solution information in .csv files.
 Performs a validation check between final solution evaluation and incremental delta evaluation to verify the optimization consistency.
 
 # Files Created
@@ -95,13 +95,13 @@ function make_output_folder(
     end
     mkpath(output_path)
 
-    full_eval_solution = Solution(eval(model.dag, DecisionVariablesArray(model.decision_variables)))
+    full_eval_solution = Solution(evaluate(model.dag, DecisionVariablesArray(model.decision_variables)))
 
     if (full_eval_solution.feasible != model.current_solution.feasible) ||
        !isapprox(full_eval_solution.objective, model.current_solution.objective)
         @error "FATAL ERROR, the full run drifted too much from the delta run"
-        @error "Full eval solution: " full_eval_solution
-        @error "Delta eval solution: " model.current_solution
+        @error "Full evaluate solution: " full_eval_solution
+        @error "Delta evaluate solution: " model.current_solution
         error()
     end
 
@@ -112,8 +112,8 @@ end
 
 """
     _write_output(
-        model::AbstractModel, 
-        output_path::String; 
+        model::AbstractModel,
+        output_path::String;
         output_type::Type{<:OutputType} = BestSolutionOutput
     )
 
@@ -149,7 +149,7 @@ function _write_output(model::AbstractModel, output_path::String; output_type::T
         output_path::String,
     )
 
-    eval(dag(model), input)
+    evaluate(dag(model), input)
 end
 
 write_output_variables(::AbstractDAGHelper, ::Vector{<:DecisionValue}, ::String) = nothing
@@ -215,5 +215,3 @@ end
     @test parse(JuLS.OutputType, "LAST") == JuLS.CurrentSolutionOutput
     @test parse(JuLS.OutputType, "ANY") == JuLS.BestSolutionOutput
 end
-
-
